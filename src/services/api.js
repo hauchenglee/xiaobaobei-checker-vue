@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://xiaobaobei-checker:5001'
+const API_BASE_URL = 'http://srv415056.hstgr.cloud:5001'
 
 export const checkText = async (text, terms = [], context = false) => {
     try {
