@@ -252,7 +252,26 @@ const setFontSize = (size) => {
 // 添加复制到剪贴板功能
 const copyToClipboard = async () => {
     try {
-        await navigator.clipboard.writeText(correctedText.value)
+        // 先尝试使用现代 API
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(correctedText.value)
+        } else {
+            // Fallback 到传统方法
+            const textarea = document.createElement('textarea')
+            textarea.value = correctedText.value
+            textarea.style.position = 'fixed'
+            textarea.style.opacity = '0'
+            document.body.appendChild(textarea)
+            textarea.select()
+
+            const success = document.execCommand('copy')
+            document.body.removeChild(textarea)
+
+            if (!success) {
+                throw new Error('execCommand failed')
+            }
+        }
+
         showToastMessage('已成功複製到剪貼簿！')
     } catch (err) {
         console.error('複製失敗:', err)
