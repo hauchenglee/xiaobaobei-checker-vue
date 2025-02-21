@@ -102,7 +102,7 @@
 import {computed, ref} from 'vue'
 import {checkText} from '../services/api'
 
-const corrections = ref({})
+const corrections = ref([])
 const originalText = ref('')
 const correctedText = ref('')
 
@@ -112,8 +112,18 @@ const toastMessage = ref('')
 
 // 词库相关状态
 const showDictionaryModal = ref(false)
+const defaultTerms = [
+    "低收入戶",
+    "中低收入戶",
+    "身心障礙證明",
+    "身心障礙者生活補助",
+    "育兒津貼",
+    "托育補助",
+    "人籍合一",
+    "設籍並居住"
+];
 const dictionaryInput = ref('')
-const dictionary = ref([])
+const dictionary = ref(defaultTerms)
 
 // 打开词库模态窗口
 const openDictionaryModal = () => {
@@ -132,6 +142,7 @@ const saveDictionary = () => {
         .split('\n')
         .map(word => word.trim())
         .filter(word => word.length > 0)
+        .filter((word, index, self) => self.indexOf(word) === index); // 去重
 
     dictionary.value = words
     showToastMessage('詞庫已更新')
@@ -364,23 +375,9 @@ textarea.panel-content {
     font-size: 0.8rem;
 }
 
-.action-bar {
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between; /* 改为两端对齐 */
-    align-items: center;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    background: rgba(255, 255, 255, 0.9);
-}
-
 .font-size-controls {
     display: flex;
     gap: 0.5rem;
-}
-
-.button-group {
-    display: flex;
-    gap: 1rem;
 }
 
 .btn-font {
@@ -443,6 +440,7 @@ textarea.panel-content {
     padding: 1rem 2rem;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 1rem;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     background: rgba(255, 255, 255, 0.9);
