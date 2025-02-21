@@ -367,12 +367,12 @@ textarea.panel-content {
 .panel-title {
     color: #333;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 1em;
 }
 
 .panel-subtitle {
     color: #666;
-    font-size: 0.8rem;
+    font-size: 1rem;
 }
 
 .font-size-controls {
