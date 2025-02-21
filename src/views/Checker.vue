@@ -87,7 +87,7 @@
                         送出檢查
                     </button>
                     <button class="btn btn-outline" @click="copyToClipboard">
-                        複製到剪貼簿
+                        複製校對文本
                     </button>
                     <button class="btn btn-secondary" @click="clearAll">
                         清除全部內容
