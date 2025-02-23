@@ -10,7 +10,7 @@ export const checkText = async (text, terms = [], is_ai = false) => {
             body: JSON.stringify({
                 article: text,
                 terms,
-                is_ai
+                is_ai: is_ai
             })
         });
 
