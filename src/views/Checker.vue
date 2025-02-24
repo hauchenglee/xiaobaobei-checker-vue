@@ -148,6 +148,9 @@ const defaultTerms = [
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
 
+// 追蹤最終文本
+const resultText = computed(() => correctedText.value);
+
 // 打开词库模态窗口
 const openDictionaryModal = () => {
     dictionaryInput.value = dictionary.value.join('\n')
@@ -229,9 +232,15 @@ window.toggleWord = (element) => {
     if (element.textContent === correct) {
         element.textContent = wrong
         element.className = 'wrong'
+
+        // 更新最終文本
+        correctedText.value = correctedText.value.replace(correct, wrong)
     } else {
         element.textContent = correct
         element.className = 'correct'
+
+        // 更新最終文本
+        correctedText.value = correctedText.value.replace(wrong, correct)
     }
 }
 
@@ -286,32 +295,27 @@ const setFontSize = (size) => {
 // 添加复制到剪贴板功能
 const copyToClipboard = async () => {
     try {
-        // 先尝试使用现代 API
         if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(correctedText.value)
+            await navigator.clipboard.writeText(resultText.value);
         } else {
-            // Fallback 到传统方法
-            const textarea = document.createElement('textarea')
-            textarea.value = correctedText.value
-            textarea.style.position = 'fixed'
-            textarea.style.opacity = '0'
-            document.body.appendChild(textarea)
-            textarea.select()
+            const textarea = document.createElement('textarea');
+            textarea.value = resultText.value;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
 
-            const success = document.execCommand('copy')
-            document.body.removeChild(textarea)
+            const success = document.execCommand('copy');
+            document.body.removeChild(textarea);
 
-            if (!success) {
-                throw new Error('execCommand failed')
-            }
+            if (!success) throw new Error('execCommand failed');
         }
-
-        showToastMessage('已成功複製到剪貼簿！')
+        showToastMessage('已成功複製到剪貼簿！');
     } catch (err) {
-        console.error('複製失敗:', err)
-        showToastMessage('複製失敗，請重試')
+        console.error('複製失敗:', err);
+        showToastMessage('複製失敗，請重試');
     }
-}
+};
 </script>
 
 <style scoped>
