@@ -149,7 +149,7 @@ const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
 
 // 追蹤最終文本
-const resultText = ref(correctedText.value);
+const resultText = computed(() => correctedText.value);
 
 // 打开词库模态窗口
 const openDictionaryModal = () => {
@@ -234,13 +234,13 @@ window.toggleWord = (element) => {
         element.className = 'wrong'
 
         // 更新最終文本
-        resultText.value = resultText.value.replace(correct, wrong);
+        correctedText.value = correctedText.value.replace(correct, wrong)
     } else {
         element.textContent = correct
         element.className = 'correct'
 
         // 更新最終文本
-        resultText.value = resultText.value.replace(wrong, correct);
+        correctedText.value = correctedText.value.replace(wrong, correct)
     }
 }
 
