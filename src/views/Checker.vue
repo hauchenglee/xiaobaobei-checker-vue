@@ -286,67 +286,26 @@ const setFontSize = (size) => {
 // 添加复制到剪贴板功能
 const copyToClipboard = async () => {
     try {
-        // 創建臨時 div 來存放原始文本
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = correctedText.value;
-
-        // 獲取所有更正的 span 元素
+        // 獲取渲染後的內容區域
         const contentDiv = document.querySelector('.panel-content');
-        const correctionSpans = contentDiv.querySelectorAll('.correct, .wrong');
+        // 獲取純文字內容（不含 HTML 標籤）
+        const finalText = contentDiv.textContent || contentDiv.innerText;
 
-        // 更新臨時 div 中的文字
-        correctionSpans.forEach(span => {
-            const original = span.dataset.wrong;
-            const correction = span.dataset.correct;
-            const currentText = span.textContent;
-
-            if (currentText === original) {
-                tempDiv.innerHTML = tempDiv.innerHTML.replace(
-                    correction,
-                    original
-                );
-            }
-        });
-
-        const finalText = tempDiv.innerHTML;
-
-        try {
-            // 優先使用現代 Clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(finalText);
-        } catch (clipboardErr) {
-            // 如果 Clipboard API 失敗，使用備選方案
+        } else {
             const textarea = document.createElement('textarea');
-            textarea.style.cssText = 'position: fixed; opacity: 0;';
             textarea.value = finalText;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
             document.body.appendChild(textarea);
+            textarea.select();
 
-            try {
-                textarea.select();
-                const range = document.createRange();
-                range.selectNodeContents(textarea);
+            const success = document.execCommand('copy');
+            document.body.removeChild(textarea);
 
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-
-                textarea.setSelectionRange(0, textarea.value.length);
-                document.body.appendChild(textarea);
-
-                // 使用 Promise 來處理複製結果
-                await new Promise((resolve, reject) => {
-                    try {
-                        document.execCommand('copy');
-                        resolve();
-                    } catch (e) {
-                        reject(e);
-                    } finally {
-                        document.body.removeChild(textarea);
-                    }
-                });
-            } finally {
-                if (document.body.contains(textarea)) {
-                    document.body.removeChild(textarea);
-                }
+            if (!success) {
+                throw new Error('execCommand failed');
             }
         }
 
