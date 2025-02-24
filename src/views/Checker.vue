@@ -79,6 +79,16 @@
                         {{ size.label }}
                     </button>
                 </div>
+                <div class="toggle-container">
+                    <label class="toggle">
+                        <input
+                            type="checkbox"
+                            v-model="isAI"
+                        >
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">使用AI模型</span>
+                </div>
                 <div class="button-group">
                     <button class="btn btn-outline" @click="openDictionaryModal">
                         新增詞庫
@@ -105,6 +115,7 @@ import {checkText} from '../services/api'
 const corrections = ref([])
 const originalText = ref('')
 const correctedText = ref('')
+const isAI = ref(false)
 
 const isLoading = ref(false)
 const showToast = ref(false)
@@ -120,7 +131,19 @@ const defaultTerms = [
     "育兒津貼",
     "托育補助",
     "人籍合一",
-    "設籍並居住"
+    "設籍並居住",
+    "未有",
+    "案主",
+    "案家",
+    "身心障礙者生活補助",
+    "罹患重傷病",
+    "非自願離職",
+    "衛福部",
+    "國民年金",
+    "遺屬年金",
+    "原則上",
+    "審核",
+    "洽詢"
 ];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
@@ -223,7 +246,7 @@ const handleCheck = async () => {
         const result = await checkText(
             originalText.value,
             dictionary.value, // 使用动态词库
-            false
+            isAI.value
         );
 
         if (result.status === 'success') {
@@ -445,6 +468,70 @@ textarea.panel-content {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     background: rgba(255, 255, 255, 0.9);
 }
+
+/* 是否使用AI */
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-label {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(203, 213, 225, 0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggle input:checked + .toggle-slider {
+    background: rgba(59, 130, 246, 0.8);
+}
+
+.toggle input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+/* btn */
 
 .btn {
     padding: 0.6rem 1.2rem;
