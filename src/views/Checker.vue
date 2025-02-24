@@ -115,7 +115,7 @@ import {checkText} from '../services/api'
 const corrections = ref([])
 const originalText = ref('')
 const correctedText = ref('')
-const isAI = ref(false)
+const isAI = ref(true)
 
 const isLoading = ref(false)
 const showToast = ref(false)
