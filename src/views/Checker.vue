@@ -286,32 +286,76 @@ const setFontSize = (size) => {
 // 添加复制到剪贴板功能
 const copyToClipboard = async () => {
     try {
-        // 先尝试使用现代 API
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(correctedText.value)
-        } else {
-            // Fallback 到传统方法
-            const textarea = document.createElement('textarea')
-            textarea.value = correctedText.value
-            textarea.style.position = 'fixed'
-            textarea.style.opacity = '0'
-            document.body.appendChild(textarea)
-            textarea.select()
+        // 創建臨時 div 來存放原始文本
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = correctedText.value;
 
-            const success = document.execCommand('copy')
-            document.body.removeChild(textarea)
+        // 獲取所有更正的 span 元素
+        const contentDiv = document.querySelector('.panel-content');
+        const correctionSpans = contentDiv.querySelectorAll('.correct, .wrong');
 
-            if (!success) {
-                throw new Error('execCommand failed')
+        // 更新臨時 div 中的文字
+        correctionSpans.forEach(span => {
+            const original = span.dataset.wrong;
+            const correction = span.dataset.correct;
+            const currentText = span.textContent;
+
+            if (currentText === original) {
+                tempDiv.innerHTML = tempDiv.innerHTML.replace(
+                    correction,
+                    original
+                );
+            }
+        });
+
+        const finalText = tempDiv.innerHTML;
+
+        try {
+            // 優先使用現代 Clipboard API
+            await navigator.clipboard.writeText(finalText);
+        } catch (clipboardErr) {
+            // 如果 Clipboard API 失敗，使用備選方案
+            const textarea = document.createElement('textarea');
+            textarea.style.cssText = 'position: fixed; opacity: 0;';
+            textarea.value = finalText;
+            document.body.appendChild(textarea);
+
+            try {
+                textarea.select();
+                const range = document.createRange();
+                range.selectNodeContents(textarea);
+
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                textarea.setSelectionRange(0, textarea.value.length);
+                document.body.appendChild(textarea);
+
+                // 使用 Promise 來處理複製結果
+                await new Promise((resolve, reject) => {
+                    try {
+                        document.execCommand('copy');
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    } finally {
+                        document.body.removeChild(textarea);
+                    }
+                });
+            } finally {
+                if (document.body.contains(textarea)) {
+                    document.body.removeChild(textarea);
+                }
             }
         }
 
-        showToastMessage('已成功複製到剪貼簿！')
+        showToastMessage('已成功複製到剪貼簿！');
     } catch (err) {
-        console.error('複製失敗:', err)
-        showToastMessage('複製失敗，請重試')
+        console.error('複製失敗:', err);
+        showToastMessage('複製失敗，請重試');
     }
-}
+};
 </script>
 
 <style scoped>
