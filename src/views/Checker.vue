@@ -148,6 +148,9 @@ const defaultTerms = [
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
 
+// 追蹤最終文本
+const resultText = ref(correctedText.value);
+
 // 打开词库模态窗口
 const openDictionaryModal = () => {
     dictionaryInput.value = dictionary.value.join('\n')
@@ -229,9 +232,15 @@ window.toggleWord = (element) => {
     if (element.textContent === correct) {
         element.textContent = wrong
         element.className = 'wrong'
+
+        // 更新最終文本
+        resultText.value = resultText.value.replace(correct, wrong);
     } else {
         element.textContent = correct
         element.className = 'correct'
+
+        // 更新最終文本
+        resultText.value = resultText.value.replace(wrong, correct);
     }
 }
 
@@ -284,67 +293,29 @@ const setFontSize = (size) => {
 };
 
 // 添加复制到剪贴板功能
-// 新增一個計算屬性
-const finalText = computed(() => {
-    if (!correctedText.value) return '';
-    let result = correctedText.value;
-
-    // 確保 corrections.value 是數組
-    if (!Array.isArray(corrections.value) || corrections.value.length === 0) {
-        return result;
-    }
-
-    // 從後向前處理，避免位置偏移
-    [...corrections.value]
-        .sort((a, b) => b.position - a.position)
-        .forEach(error => {
-            const {position, original, correction} = error;
-            // 查找對應的 span 元素
-            const span = document.querySelector(
-                `.correct[data-wrong="${original}"][data-correct="${correction}"], ` +
-                `.wrong[data-wrong="${original}"][data-correct="${correction}"]`
-            );
-
-            // 使用實際顯示的文字（如果有 span 且被切換過）
-            const word = span ? span.textContent : correction;
-
-            const before = result.slice(0, position);
-            const after = result.slice(position + correction.length);
-            result = before + word + after;
-        });
-
-    return result;
-});
-
-// 簡化後的複製功能
 const copyToClipboard = async () => {
     try {
-        // 先尝试使用现代 API
         if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(finalText.value)
+            await navigator.clipboard.writeText(resultText.value);
         } else {
-            // Fallback 到传统方法
-            const textarea = document.createElement('textarea')
-            textarea.value = finalText.value
-            textarea.style.position = 'fixed'
-            textarea.style.opacity = '0'
-            document.body.appendChild(textarea)
-            textarea.select()
+            const textarea = document.createElement('textarea');
+            textarea.value = resultText.value;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
 
-            const success = document.execCommand('copy')
-            document.body.removeChild(textarea)
+            const success = document.execCommand('copy');
+            document.body.removeChild(textarea);
 
-            if (!success) {
-                throw new Error('execCommand failed')
-            }
+            if (!success) throw new Error('execCommand failed');
         }
-
-        showToastMessage('已成功複製到剪貼簿！')
+        showToastMessage('已成功複製到剪貼簿！');
     } catch (err) {
-        console.error('複製失敗:', err)
-        showToastMessage('複製失敗，請重試')
+        console.error('複製失敗:', err);
+        showToastMessage('複製失敗，請重試');
     }
-}
+};
 </script>
 
 <style scoped>
