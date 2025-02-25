@@ -85,7 +85,6 @@
                         v-model="aiModel"
                         class="select-input"
                     >
-                        <option value="" disabled selected>請選擇模型</option>
                         <option value="Claude3.5-Sonnet">Claude 3.5 Sonnet</option>
                         <option value="Poe-DeepSeek-R1">DeepSeek R1</option>
                         <option value="kenLM">KenLM</option>
@@ -117,7 +116,7 @@ import {checkText} from '../services/api'
 const corrections = ref([])
 const originalText = ref('')
 const correctedText = ref('')
-const aiModel = ref('')
+const aiModel = ref('Claude3.5-Sonnet')
 
 const isLoading = ref(false)
 const showToast = ref(false)
