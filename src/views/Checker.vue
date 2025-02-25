@@ -86,7 +86,7 @@
                         class="select-input"
                     >
                         <option value="Claude3.5-Sonnet">Claude 3.5 Sonnet</option>
-                        <option value="Poe-DeepSeekR1">DeepSeek R1</option>
+                        <option value="Poe-DeepSeek-R1">DeepSeek R1</option>
                         <option value="kenLM">KenLM</option>
                     </select>
                 </div>
