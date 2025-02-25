@@ -79,15 +79,17 @@
                         {{ size.label }}
                     </button>
                 </div>
-                <div class="toggle-container">
-                    <label class="toggle">
-                        <input
-                            type="checkbox"
-                            v-model="isAI"
-                        >
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span class="toggle-label">使用AI模型</span>
+                <div class="select-container">
+                    <label class="select-label">選擇AI模型</label>
+                    <select
+                        v-model="aiModel"
+                        class="select-input"
+                    >
+                        <option value="" disabled selected>請選擇模型</option>
+                        <option value="Claude3.5-Sonnet">Claude 3.5 Sonnet</option>
+                        <option value="Poe-DeepSeek-R1">DeepSeek R1</option>
+                        <option value="kenLM">KenLM</option>
+                    </select>
                 </div>
                 <div class="button-group">
                     <button class="btn btn-outline" @click="openDictionaryModal">
@@ -115,7 +117,7 @@ import {checkText} from '../services/api'
 const corrections = ref([])
 const originalText = ref('')
 const correctedText = ref('')
-const isAI = ref(true)
+const aiModel = ref('')
 
 const isLoading = ref(false)
 const showToast = ref(false)
@@ -250,12 +252,17 @@ const handleCheck = async () => {
         return
     }
 
+    if (!aiModel.value) {
+        showToastMessage('請選擇AI模型')
+        return
+    }
+
     isLoading.value = true
     try {
         const result = await checkText(
             originalText.value,
             dictionary.value, // 使用动态词库
-            isAI.value
+            aiModel.value
         );
 
         if (result.status === 'success') {
@@ -475,64 +482,43 @@ textarea.panel-content {
 
 /* 是否使用AI */
 
-.toggle-container {
+.select-container {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
 }
 
-.toggle-label {
+.select-label {
     color: #666;
     font-size: 0.9rem;
     font-weight: 500;
 }
 
-.toggle {
-    position: relative;
-    display: inline-block;
-    width: 48px;
-    height: 24px;
-}
-
-.toggle input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(203, 213, 225, 0.8);
-    backdrop-filter: blur(4px);
+.select-input {
+    padding: 0.5rem 2rem 0.5rem 1rem;
+    border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    transition: .4s;
-    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    color: #333;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
 }
 
-.toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 2px;
-    bottom: 2px;
-    background: white;
-    transition: .4s;
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.select-input:hover {
+    border-color: #3b82f6;
 }
 
-.toggle input:checked + .toggle-slider {
-    background: rgba(59, 130, 246, 0.8);
-}
-
-.toggle input:checked + .toggle-slider:before {
-    transform: translateX(24px);
+.select-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 /* btn */
