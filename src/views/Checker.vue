@@ -85,6 +85,7 @@
                         v-model="aiModel"
                         class="select-input"
                     >
+                        <option value="" disabled selected>請選擇模型</option>
                         <option value="Claude3.5-Sonnet">Claude 3.5 Sonnet</option>
                         <option value="Poe-DeepSeek-R1">DeepSeek R1</option>
                         <option value="kenLM">KenLM</option>
@@ -116,7 +117,7 @@ import {checkText} from '../services/api'
 const corrections = ref([])
 const originalText = ref('')
 const correctedText = ref('')
-const aiModel = ref('api-Claude3.5-Sonnet')
+const aiModel = ref('')
 
 const isLoading = ref(false)
 const showToast = ref(false)
@@ -248,6 +249,11 @@ window.toggleWord = (element) => {
 const handleCheck = async () => {
     if (!originalText.value.trim()) {
         showToastMessage('請輸入要校對的文本')
+        return
+    }
+
+    if (!aiModel.value) {
+        showToastMessage('請選擇AI模型')
         return
     }
 
