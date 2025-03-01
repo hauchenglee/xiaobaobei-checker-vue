@@ -69,11 +69,15 @@
                             <div v-if="errorCollection.errors && errorCollection.errors.length > 0" class="corrections-list">
                                 <div v-for="(error, index) in errorCollection.errors" :key="index" class="correction-item">
                                     <div class="correction-original">
-                                        <span class="wrong">{{ error.original }}</span>
+                                        <template v-for="(char, charIndex) in compareText(error.original, error.correction)">
+                                            <span :class="{ 'wrong': char.isDifferent }">{{ char.char }}</span>
+                                        </template>
                                     </div>
                                     <div class="correction-arrow">→</div>
                                     <div class="correction-corrected">
-                                        <span class="correct">{{ error.correction }}</span>
+                                        <template v-for="(char, charIndex) in compareText(error.correction, error.original)">
+                                            <span :class="{ 'correct': char.isDifferent }">{{ char.char }}</span>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
@@ -150,6 +154,7 @@ const defaultTerms = [
     "衛福部",
     "國民年金",
     "遺屬年金",
+    "表知悉"
 ];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
@@ -217,6 +222,24 @@ const handleCheck = async () => {
         isLoading.value = false
     }
 }
+
+// 添加文本比较函数
+const compareText = (original, correction) => {
+    const result = [];
+    const maxLength = Math.max(original.length, correction.length);
+
+    for (let i = 0; i < maxLength; i++) {
+        const origChar = original[i] || '';
+        const corrChar = correction[i] || '';
+
+        result.push({
+            char: origChar,
+            isDifferent: origChar !== corrChar
+        });
+    }
+
+    return result;
+};
 
 const clearAll = () => {
     originalText.value = ''
