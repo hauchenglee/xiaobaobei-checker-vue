@@ -62,7 +62,6 @@
                 <section class="editor-panel">
                     <div class="panel-header">
                         <span class="panel-title">校對结果</span>
-                        <span class="panel-subtitle">點擊綠色文字切換</span>
                     </div>
                     <div class="panel-content">
                         <!-- 添加校对结果列表 -->
@@ -317,11 +316,6 @@ textarea.panel-content {
     color: #333;
     font-weight: 500;
     font-size: 1em;
-}
-
-.panel-subtitle {
-    color: #666;
-    font-size: 1rem;
 }
 
 .font-size-controls {
