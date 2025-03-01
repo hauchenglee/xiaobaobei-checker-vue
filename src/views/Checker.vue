@@ -139,26 +139,18 @@ const toastMessage = ref('')
 // 词库相关状态
 const showDictionaryModal = ref(false)
 const defaultTerms = [
-    "低收入戶",
-    "中低收入戶",
     "身心障礙證明",
     "身心障礙者生活補助",
     "育兒津貼",
     "托育補助",
     "人籍合一",
-    "設籍並居住",
-    "未有",
     "案主",
     "案家",
-    "身心障礙者生活補助",
     "罹患重傷病",
     "非自願離職",
     "衛福部",
     "國民年金",
     "遺屬年金",
-    "原則上",
-    "審核",
-    "洽詢"
 ];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
