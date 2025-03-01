@@ -64,7 +64,25 @@
                         <span class="panel-title">校對结果</span>
                         <span class="panel-subtitle">點擊綠色文字切換</span>
                     </div>
-                    <div class="panel-content" v-html="markedCorrectedText"></div>
+                    <div class="panel-content">
+                        <!-- 添加校对结果列表 -->
+                        <div v-if="errorCollection">
+                            <div v-if="errorCollection.errors && errorCollection.errors.length > 0" class="corrections-list">
+                                <div v-for="(error, index) in errorCollection.errors" :key="index" class="correction-item">
+                                    <div class="correction-original">
+                                        <span class="wrong">{{ error.original }}</span>
+                                    </div>
+                                    <div class="correction-arrow">→</div>
+                                    <div class="correction-corrected">
+                                        <span class="correct">{{ error.correction }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="no-errors">
+                                <p>未發現需要校正的內容</p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </main>
 
@@ -85,9 +103,9 @@
                         v-model="aiModel"
                         class="select-input"
                     >
-                        <option value="Claude3.5-Sonnet">Claude 3.5 Sonnet</option>
-                        <option value="Poe-DeepSeek-R1">DeepSeek R1</option>
-                        <option value="kenLM">KenLM</option>
+                        <option value="claude-3-5-sonnet-20241022">claude-3.5-sonnet</option>
+                        <option value="claude-3-7-sonnet-20250219">claude-3-7-sonnet</option>
+                        <!--                        <option value="poe-DeepSeek-R1">DeepSeek R1 (POE)</option>-->
                     </select>
                 </div>
                 <div class="button-group">
@@ -96,9 +114,6 @@
                     </button>
                     <button class="btn btn-primary" @click="handleCheck">
                         送出檢查
-                    </button>
-                    <button class="btn btn-outline" @click="copyToClipboard">
-                        複製校對文本
                     </button>
                     <button class="btn btn-secondary" @click="clearAll">
                         清除全部內容
@@ -110,13 +125,12 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue'
+import {ref} from 'vue'
 import {checkText} from '../services/api'
 
-const corrections = ref([])
 const originalText = ref('')
-const correctedText = ref('')
-const aiModel = ref('Claude3.5-Sonnet')
+const errorCollection = ref(null) // 添加校对结果状态
+const aiModel = ref('claude-3-7-sonnet-20250219')
 
 const isLoading = ref(false)
 const showToast = ref(false)
@@ -148,9 +162,6 @@ const defaultTerms = [
 ];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
-
-// 追蹤最終文本
-const resultText = computed(() => correctedText.value);
 
 // 打开词库模态窗口
 const openDictionaryModal = () => {
@@ -185,66 +196,6 @@ const showToastMessage = (message, duration = 2000) => {
     }, duration)
 }
 
-const markText = (text, isOriginal = true) => {
-    if (!text) return '';
-    let result = text;
-
-    // 确保 corrections.value 是数组
-    if (!Array.isArray(corrections.value) || corrections.value.length === 0) {
-        return result;
-    }
-
-    // 从后向前处理错误，避免位置偏移
-    [...corrections.value]
-        .sort((a, b) => b.position - a.position)
-        .forEach(error => {
-            const {position, original, correction} = error;
-            const word = isOriginal ? original : correction;
-            const className = isOriginal ? 'wrong' : 'correct';
-
-            const before = result.slice(0, position);
-            const after = result.slice(position + original.length);
-
-            if (isOriginal) {
-                result = before +
-                    `<span class="${className}">${word}</span>` +
-                    after;
-            } else {
-                result = before +
-                    `<span class="${className}" 
-                            data-wrong="${original}" 
-                            data-correct="${correction}" 
-                            onclick="window.toggleWord(this)">${word}</span>` +
-                    after;
-            }
-        });
-
-    return result;
-}
-
-const markedOriginalText = computed(() => markText(originalText.value, true))
-const markedCorrectedText = computed(() => markText(correctedText.value, false))
-
-// 需要将toggleWord方法挂载到window上，因为我们在innerHTML中使用了onclick
-window.toggleWord = (element) => {
-    const wrong = element.dataset.wrong
-    const correct = element.dataset.correct
-
-    if (element.textContent === correct) {
-        element.textContent = wrong
-        element.className = 'wrong'
-
-        // 更新最終文本
-        correctedText.value = correctedText.value.replace(correct, wrong)
-    } else {
-        element.textContent = correct
-        element.className = 'correct'
-
-        // 更新最終文本
-        correctedText.value = correctedText.value.replace(wrong, correct)
-    }
-}
-
 const handleCheck = async () => {
     if (!originalText.value.trim()) {
         showToastMessage('請輸入要校對的文本')
@@ -258,15 +209,14 @@ const handleCheck = async () => {
 
     isLoading.value = true
     try {
-        const result = await checkText(
+        const response = await checkText(
             originalText.value,
             dictionary.value, // 使用动态词库
             aiModel.value
         );
 
-        if (result.status === 'success') {
-            correctedText.value = result.corrected_text
-            corrections.value = result.errors
+        if (response.status === 'success') {
+            errorCollection.value = response
             showToastMessage('校對完成')
         }
     } catch (error) {
@@ -279,8 +229,7 @@ const handleCheck = async () => {
 
 const clearAll = () => {
     originalText.value = ''
-    correctedText.value = ''
-    corrections.value = [] // 添加这行，重置 corrections 为空数组
+    errorCollection.value = null // 清除校对结果
     showToastMessage('已清除全部內容')
 }
 
@@ -296,31 +245,6 @@ const currentFontSize = ref('1.5rem'); // 默认中字体
 
 const setFontSize = (size) => {
     currentFontSize.value = size;
-};
-
-// 添加复制到剪贴板功能
-const copyToClipboard = async () => {
-    try {
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(resultText.value);
-        } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = resultText.value;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-
-            const success = document.execCommand('copy');
-            document.body.removeChild(textarea);
-
-            if (!success) throw new Error('execCommand failed');
-        }
-        showToastMessage('已成功複製到剪貼簿！');
-    } catch (err) {
-        console.error('複製失敗:', err);
-        showToastMessage('複製失敗，請重試');
-    }
 };
 </script>
 
@@ -731,5 +655,48 @@ textarea.panel-content {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
+}
+
+/* 校对列表 */
+.corrections-list {
+    margin-top: 1.5rem;
+}
+
+.correction-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.correction-original {
+    flex: 1;
+}
+
+.correction-arrow {
+    margin: 0 1rem;
+    color: #666;
+    font-weight: bold;
+}
+
+.correction-corrected {
+    flex: 1;
+}
+
+.corrections-list h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.no-errors {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
 }
 </style>
