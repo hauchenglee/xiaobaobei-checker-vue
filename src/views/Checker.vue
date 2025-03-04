@@ -106,10 +106,10 @@
                         v-model="aiModel"
                         class="select-input"
                     >
-                        <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet</option>
-                        <option value="claude-3-7-sonnet-20250219">claude-3-7-sonnet</option>
-                        <option value="poe-DeepSeek-V3-FW">DeepSeek V3 FW (POE)</option>
-                        <option value="poe-DeepSeek-R1-FW">DeepSeek R1 FW (POE)</option>
+                        <option value="claude-3-5-sonnet-20241022">Claude-3-5-Sonnet</option>
+                        <option value="claude-3-7-sonnet-20250219">Claude-3-7-Sonnet</option>
+                        <option value="poe-DeepSeek-V3-FW">DeepSeek-V3</option>
+                        <option value="poe-DeepSeek-R1-FW">DeepSeek-R1</option>
                     </select>
                 </div>
                 <div class="button-group">
