@@ -108,7 +108,8 @@
                     >
                         <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet</option>
                         <option value="claude-3-7-sonnet-20250219">claude-3-7-sonnet</option>
-                        <!--                        <option value="poe-DeepSeek-R1">DeepSeek R1 (POE)</option>-->
+                        <option value="poe-DeepSeek-V3-FW">DeepSeek V3 FW (POE)</option>
+                        <option value="poe-DeepSeek-R1-FW">DeepSeek R1 FW (POE)</option>
                     </select>
                 </div>
                 <div class="button-group">
