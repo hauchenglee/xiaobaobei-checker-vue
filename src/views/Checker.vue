@@ -154,7 +154,12 @@ const defaultTerms = [
     "衛福部",
     "國民年金",
     "遺屬年金",
-    "表知悉"
+    "表知悉",
+    "表示知悉",
+    "兒童及少年未來教育與發展帳戶",
+    "家庭生活補助",
+    "兒童生活補助",
+    "就學生活補助"
 ];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
