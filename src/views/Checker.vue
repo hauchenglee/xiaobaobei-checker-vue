@@ -134,7 +134,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('poe-DeepSeek-R1-FW')
+const aiModel = ref('poe-DeepSeek-V3-FW')
 
 const isLoading = ref(false)
 const showToast = ref(false)
