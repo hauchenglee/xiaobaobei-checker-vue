@@ -158,7 +158,8 @@ const defaultTerms = [
     "兒童及少年未來教育與發展帳戶",
     "家庭生活補助",
     "兒童生活補助",
-    "就學生活補助"
+    "就學生活補助",
+    "送托"
 ];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
