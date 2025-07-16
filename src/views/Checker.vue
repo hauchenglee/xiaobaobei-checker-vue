@@ -108,9 +108,10 @@
                     >
                         <option value="claude-3-5-sonnet-20241022">Claude-3-5-Sonnet</option>
                         <option value="claude-3-7-sonnet-20250219">Claude-3-7-Sonnet</option>
+                        <option value="poe-Claude-Sonnet-3.7">Claude-Sonnet-3.7</option>
+                        <option value="poe-Claude-Sonnet-4">Claude-Sonnet-4</option>
                         <option value="poe-Gemini-2.5-Pro">Gemini-2.5-Pro</option>
-                        <option value="poe-GPT-4o-mini">GPT-4o-mini</option>
-                        <option value="poe-DeepSeek-R1-FW">DeepSeek-R1</option>
+                        <option value="poe-GPT-o3">GPT-o3</option>
                     </select>
                 </div>
                 <div class="button-group">
@@ -135,7 +136,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('poe-GPT-4o-mini')
+const aiModel = ref('poe-Claude-Sonnet-3.7')
 
 const isLoading = ref(false)
 const showToast = ref(false)
