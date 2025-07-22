@@ -138,7 +138,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('poe-GPT-o3')
+const aiModel = ref('poe-Gemini-2.5-Pro')
 
 const isLoading = ref(false)
 const showToast = ref(false)
