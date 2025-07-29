@@ -108,7 +108,8 @@
                     >
                         <option value="claude-3-5-sonnet-20241022">Claude-3-5-Sonnet</option>
                         <option value="claude-3-7-sonnet-20250219">Claude-3-7-Sonnet</option>
-                        <option value="claude-sonnet-4-20250514">claude-sonnet-4</option>
+                        <option value="claude-sonnet-4-20250514">Claude-sonnet-4</option>
+                        <option value="gemini-2.5-flash">Gemini-2.5-flash</option>
                         <option value="poe-DeepSeek-R1">DeepSeek-R1</option>
                         <option value="poe-DeepSeek-V3">DeepSeek-V3</option>
                         <option value="poe-Gemini-2.5-Pro">Gemini-2.5-Pro</option>
@@ -137,7 +138,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('claude-sonnet-4-20250514')
+const aiModel = ref('poe-Gemini-2.5-Pro')
 
 const isLoading = ref(false)
 const showToast = ref(false)
