@@ -110,10 +110,10 @@
                         <option value="claude-3-7-sonnet-20250219">Claude-3-7-Sonnet</option>
                         <option value="claude-sonnet-4-20250514">Claude-sonnet-4</option>
                         <option value="gemini-2.5-flash">Gemini-2.5-flash</option>
-                        <option value="poe-DeepSeek-R1">DeepSeek-R1</option>
-                        <option value="poe-DeepSeek-V3">DeepSeek-V3</option>
-                        <option value="poe-Gemini-2.5-Pro">Gemini-2.5-Pro</option>
-                        <option value="poe-GPT-o3">GPT-o3</option>
+                        <option value="poe-Gemini-2.5-Pro">Poe-Gemini-2.5-Pro</option>
+                        <option value="poe-DeepSeek-R1">Poe-DeepSeek-R1</option>
+                        <option value="poe-DeepSeek-V3">Poe-DeepSeek-V3</option>
+                        <option value="poe-GPT-o3">Poe-GPT-o3</option>
                     </select>
                 </div>
                 <div class="button-group">
