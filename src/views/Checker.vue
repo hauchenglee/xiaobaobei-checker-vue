@@ -110,8 +110,6 @@
                         <option value="claude-3-7-sonnet-20250219">Claude-3-7-Sonnet</option>
                         <option value="poe-DeepSeek-R1">DeepSeek-R1</option>
                         <option value="poe-DeepSeek-V3">DeepSeek-V3</option>
-                        <option value="poe-Claude-Sonnet-3.7">Claude-Sonnet-3.7</option>
-                        <option value="poe-Claude-Sonnet-4">Claude-Sonnet-4</option>
                         <option value="poe-Gemini-2.5-Pro">Gemini-2.5-Pro</option>
                         <option value="poe-GPT-o3">GPT-o3</option>
                     </select>
