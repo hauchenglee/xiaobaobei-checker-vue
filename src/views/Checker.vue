@@ -136,7 +136,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('poe-Gemini-2.5-Pro')
+const aiModel = ref('claude-3-7-sonnet-20250219')
 
 const isLoading = ref(false)
 const showToast = ref(false)
