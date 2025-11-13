@@ -157,7 +157,8 @@ const defaultTerms = [
     "家庭生活補助",
     "兒童生活補助",
     "就學生活補助",
-    "送托"
+    "送托",
+    "主述問題"
 ];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
