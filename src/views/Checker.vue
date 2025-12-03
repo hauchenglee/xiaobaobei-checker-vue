@@ -106,13 +106,10 @@
                         v-model="aiModel"
                         class="select-input"
                     >
-                        <option value="claude-3-5-sonnet-20241022">Claude-3-5-Sonnet</option>
-                        <option value="claude-3-7-sonnet-20250219">Claude-3-7-Sonnet</option>
                         <option value="claude-sonnet-4-20250514">Claude-sonnet-4</option>
-                        <option value="gemini-2.5-flash">Gemini-2.5-flash</option>
                         <option value="poe-Gemini-2.5-Pro">Poe-Gemini-2.5-Pro</option>
                         <option value="poe-DeepSeek-R1">Poe-DeepSeek-R1</option>
-                        <option value="poe-DeepSeek-V3">Poe-DeepSeek-V3</option>
+                        <option value="poe-DeepSeek-V3.2">Poe-DeepSeek-V3.2</option>
                         <option value="poe-GPT-o3">Poe-GPT-o3</option>
                     </select>
                 </div>
@@ -138,7 +135,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('poe-Gemini-2.5-Pro')
+const aiModel = ref('poe-DeepSeek-V3.2')
 
 const isLoading = ref(false)
 const showToast = ref(false)
