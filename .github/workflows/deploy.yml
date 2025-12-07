@@ -56,8 +56,8 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            docker pull hauchenglee/xiaobaobei-checker-vue:${{ needs.build-and-push-docker.outputs.tag }}
-            cd /opt/xiaobaobei-checker
+            cd /opt/xiaobaobei-server
             echo "VERSION=${{ needs.build-and-push-docker.outputs.tag }}" > .env
             docker compose pull vue1
+            docker compose down vue1
             docker compose up -d vue1
