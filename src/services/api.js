@@ -1,15 +1,15 @@
-const API_BASE_URL = 'http://srv415056.hstgr.cloud:5001'
+const API_BASE_URL = 'http://srv415056.hstgr.cloud:8080'
 
-export const checkText = async (text, terms = [], model = false) => {
+export const checkText = async (originalText, dictionary = [], model = false) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/check`, {
+        const response = await fetch(`${API_BASE_URL}/api/checker/check`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                article: text,
-                terms,
+                original: originalText,
+                dictionary: dictionary,
                 model: model
             })
         });

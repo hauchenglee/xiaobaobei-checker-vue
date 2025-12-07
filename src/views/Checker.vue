@@ -65,17 +65,23 @@
                     </div>
                     <div class="panel-content">
                         <!-- 添加校对结果列表 -->
+                        <!-- 添加校对结果列表 -->
                         <div v-if="errorCollection">
+                            <!-- 這裡使用了 JSON 中的 errors 陣列 -->
                             <div v-if="errorCollection.errors && errorCollection.errors.length > 0" class="corrections-list">
                                 <div v-for="(error, index) in errorCollection.errors" :key="index" class="correction-item">
                                     <div class="correction-original">
-                                        <template v-for="(char, charIndex) in compareText(error.original, error.correction)">
+                                        <!-- 修改點：將 error.original 改為 error.before -->
+                                        <!-- 修改點：將 error.correction 改為 error.after -->
+                                        <template v-for="(char, charIndex) in compareText(error.before, error.after)">
                                             <span :class="{ 'wrong': char.isDifferent }">{{ char.char }}</span>
                                         </template>
                                     </div>
                                     <div class="correction-arrow">→</div>
                                     <div class="correction-corrected">
-                                        <template v-for="(char, charIndex) in compareText(error.correction, error.original)">
+                                        <!-- 修改點：將 error.correction 改為 error.after -->
+                                        <!-- 修改點：將 error.original 改為 error.before -->
+                                        <template v-for="(char, charIndex) in compareText(error.after, error.before)">
                                             <span :class="{ 'correct': char.isDifferent }">{{ char.char }}</span>
                                         </template>
                                     </div>
@@ -83,6 +89,8 @@
                             </div>
                             <div v-else class="no-errors">
                                 <p>未發現需要校正的內容</p>
+                                <!-- 如果沒有錯誤，也可以顯示完整的修正後文本 -->
+                                <!-- <p style="margin-top: 1rem; color: #333;">{{ errorCollection.corrected }}</p> -->
                             </div>
                         </div>
                     </div>
@@ -106,11 +114,10 @@
                         v-model="aiModel"
                         class="select-input"
                     >
-                        <option value="claude-sonnet-4-20250514">Claude-sonnet-4</option>
-                        <option value="poe-Gemini-2.5-Pro">Poe-Gemini-2.5-Pro</option>
-                        <option value="poe-DeepSeek-R1">Poe-DeepSeek-R1</option>
-                        <option value="poe-DeepSeek-V3.2">Poe-DeepSeek-V3.2</option>
-                        <option value="poe-GPT-o3">Poe-GPT-o3</option>
+                        <option value="Gemini-3-Pro">Gemini-3-Pro</option>
+                        <option value="DeepSeek-R1">DeepSeek-R1</option>
+                        <option value="DeepSeek-V3.2">DeepSeek-V3.2</option>
+                        <option value="GPT-o3">GPT-o3</option>
                     </select>
                 </div>
                 <div class="button-group">
@@ -135,7 +142,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('poe-DeepSeek-V3.2')
+const aiModel = ref('Gemini-3-Pro')
 
 const isLoading = ref(false)
 const showToast = ref(false)
@@ -212,9 +219,15 @@ const handleCheck = async () => {
             aiModel.value
         );
 
-        if (response.status === 'success') {
-            errorCollection.value = response
-            showToastMessage('校對完成')
+        // 1. 根據 JSON 修改判斷條件
+        if (response.code === '200') {
+            // 修改點：response.data 包含了 { corrected: "...", errors: [...] }
+            // 直接賦值給 errorCollection，這樣 template 就能通過 errorCollection.errors 訪問
+            errorCollection.value = response.data;
+
+            showToastMessage('校對完成');
+        } else {
+            showToastMessage(response.message || '校對發生錯誤');
         }
     } catch (error) {
         console.error('Check failed:', error)
@@ -710,3 +723,5 @@ textarea.panel-content {
     color: #666;
 }
 </style>
+<script setup lang="ts">
+</script>
