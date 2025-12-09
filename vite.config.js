@@ -6,7 +6,7 @@ import vue from '@vitejs/plugin-vue'
 // https://vite.dev/config/
 export default defineConfig({
     // [新增] 設定基礎路徑，必須與 Nginx location /checker/ 對應
-    base: '/checker/',
+    base: '/checker-v/',
 
     plugins: [
         vue(),
