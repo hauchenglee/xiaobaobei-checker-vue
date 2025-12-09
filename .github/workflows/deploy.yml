@@ -57,7 +57,12 @@ jobs:
           port: 22
           script: |
             cd /opt/xiaobaobei-server
-            echo "VERSION=${{ needs.build-and-push-docker.outputs.tag }}" > .env
+            # 使用 sed 替換 VUE_CHECKER_VERSION 的值
+            sed -i "s/^VUE_CHECKER_VERSION=.*/VUE_CHECKER_VERSION=${{ needs.build-and-push-docker.outputs.tag }}/" .env
+            
+            # 檢查修改結果 (選用)
+            grep "VUE_CHECKER_VERSION" .env
+            
+            # 重啟服務
             docker compose pull vue1
-            docker compose down vue1
             docker compose up -d vue1
