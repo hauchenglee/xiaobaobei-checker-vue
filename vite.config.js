@@ -2,38 +2,41 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-// import vueDevTools from 'vite-plugin-vue-devtools' //devtools 插件
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    // vueDevTools(), //devtools 插件
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    },
-  },
-  server: {
-    host: '0.0.0.0',    // 允許外部訪問
-    port: 5173,         // 指定端口
-    strictPort: true,   // 如果端口被占用，直接報錯
-    cors: true,
-    allowedHosts: [
-      'srv415056.hstgr.cloud',
-      'localhost',
-      '62.72.59.32'
+    // [新增] 設定基礎路徑，必須與 Nginx location /checker/ 對應
+    base: '/checker/',
+
+    plugins: [
+        vue(),
     ],
-    hmr: {
-      host: 'srv415056.hstgr.cloud',
-      port: 5173,
-      protocol: 'http'
+    resolve: {
+        alias: {
+            '@': fileURLToPath(new URL('./src', import.meta.url))
+        },
     },
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        cors: true,
+        allowedHosts: [
+            'srv415056.hstgr.cloud',
+            'localhost',
+            '62.72.59.32'
+        ],
+        // [修改] HMR 設定
+        hmr: {
+            host: 'srv415056.hstgr.cloud',
+            // 這裡不能寫 5173，因為外部無法訪問 5173
+            // 我們透過 Nginx (Port 80) 轉發 WebSocket，所以這裡告訴瀏覽器連 Port 80
+            clientPort: 80,
+            // 如果 Nginx 有設定 location /checker/ 支援 upgrade，這裡通常不需要特別改 path
+        },
+        // Headers 其實在 Nginx 層處理了，這裡保留也沒關係
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        }
     }
-  }
 })
