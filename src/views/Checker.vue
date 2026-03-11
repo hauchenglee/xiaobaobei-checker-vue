@@ -114,7 +114,7 @@
                         v-model="aiModel"
                         class="select-input"
                     >
-                        <option value="Gemini-3.1-Pro">Gemini-3.1-Proh</option>
+                        <option value="Gemini-3.1-Pro">Gemini-3.1-Pro</option>
                         <option value="DeepSeek-R1">DeepSeek-R1</option>
                         <option value="DeepSeek-V3.2">DeepSeek-V3.2</option>
                         <option value="GPT-o3">GPT-o3</option>
