@@ -141,7 +141,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('GPT-5.4"')
+const aiModel = ref('GPT-5.4')
 
 const isLoading = ref(false)
 const showToast = ref(false)
