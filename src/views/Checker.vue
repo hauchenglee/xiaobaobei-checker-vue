@@ -114,11 +114,10 @@
                         v-model="aiModel"
                         class="select-input"
                     >
-                        <option value="Kimi-K2.5">Kimi-K2.5</option>
+                        <option value="GPT-5.4">GPT-5.4"</option>
                         <option value="DeepSeek-R1">DeepSeek-R1</option>
                         <option value="DeepSeek-V3.2">DeepSeek-V3.2</option>
                         <option value="Gemini-3.1-Pro">Gemini-3.1-Pro</option>
-                        <option value="GPT-5.4">GPT-5.4"</option>
                     </select>
                 </div>
                 <div class="button-group">
@@ -143,7 +142,7 @@ import {checkText} from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null) // 添加校对结果状态
-const aiModel = ref('Kimi-K2.5')
+const aiModel = ref('GPT-5.4')
 
 const isLoading = ref(false)
 const showToast = ref(false)
