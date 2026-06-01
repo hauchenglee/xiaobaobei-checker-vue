@@ -16,11 +16,12 @@
             </div>
         </div>
 
-
         <div class="glass-container">
             <header>
                 <h1>文本校對工具</h1>
-            </header><!-- 添加词库模态窗口 -->
+            </header>
+
+            <!-- 添加词库模态窗口 -->
             <div v-if="showDictionaryModal" class="modal-overlay">
                 <div class="modal-container">
                     <div class="modal-header">
@@ -64,33 +65,54 @@
                         <span class="panel-title">校對结果</span>
                     </div>
                     <div class="panel-content">
-                        <!-- 添加校对结果列表 -->
-                        <!-- 添加校对结果列表 -->
                         <div v-if="errorCollection">
-                            <!-- 這裡使用了 JSON 中的 errors 陣列 -->
-                            <div v-if="errorCollection.errors && errorCollection.errors.length > 0" class="corrections-list">
-                                <div v-for="(error, index) in errorCollection.errors" :key="index" class="correction-item">
+                            <div
+                                v-if="errorCollection.errors && errorCollection.errors.length > 0"
+                                class="corrections-list"
+                            >
+                                <div
+                                    v-for="(error, index) in errorCollection.errors"
+                                    :key="index"
+                                    class="correction-item"
+                                >
                                     <div class="correction-original">
-                                        <!-- 修改點：將 error.original 改為 error.before -->
-                                        <!-- 修改點：將 error.correction 改為 error.after -->
-                                        <template v-for="(char, charIndex) in compareText(error.before, error.after)">
-                                            <span :class="{ 'wrong': char.isDifferent }">{{ char.char }}</span>
+                                        <template
+                                            v-for="(char, charIndex) in compareText(error.before, error.after, 'before')"
+                                            :key="`before-${index}-${charIndex}`"
+                                        >
+                                            <span
+                                                :class="[
+                                                    char.isDifferent ? 'wrong' : '',
+                                                    char.diffType
+                                                ]"
+                                            >
+                                                {{ displayChar(char.char) }}
+                                            </span>
                                         </template>
                                     </div>
+
                                     <div class="correction-arrow">→</div>
+
                                     <div class="correction-corrected">
-                                        <!-- 修改點：將 error.correction 改為 error.after -->
-                                        <!-- 修改點：將 error.original 改為 error.before -->
-                                        <template v-for="(char, charIndex) in compareText(error.after, error.before)">
-                                            <span :class="{ 'correct': char.isDifferent }">{{ char.char }}</span>
+                                        <template
+                                            v-for="(char, charIndex) in compareText(error.before, error.after, 'after')"
+                                            :key="`after-${index}-${charIndex}`"
+                                        >
+                                            <span
+                                                :class="[
+                                                    char.isDifferent ? 'correct' : '',
+                                                    char.diffType
+                                                ]"
+                                            >
+                                                {{ displayChar(char.char) }}
+                                            </span>
                                         </template>
                                     </div>
                                 </div>
                             </div>
+
                             <div v-else class="no-errors">
                                 <p>未發現需要校正的內容</p>
-                                <!-- 如果沒有錯誤，也可以顯示完整的修正後文本 -->
-                                <!-- <p style="margin-top: 1rem; color: #333;">{{ errorCollection.corrected }}</p> -->
                             </div>
                         </div>
                     </div>
@@ -102,12 +124,17 @@
                     <button
                         v-for="size in fontSizes"
                         :key="size.value"
-                        :class="['btn', 'btn-font', currentFontSize === size.value ? 'btn-font-active' : '']"
+                        :class="[
+                            'btn',
+                            'btn-font',
+                            currentFontSize === size.value ? 'btn-font-active' : ''
+                        ]"
                         @click="setFontSize(size.value)"
                     >
                         {{ size.label }}
                     </button>
                 </div>
+
                 <div class="select-container">
                     <label class="select-label">選擇AI模型</label>
                     <select
@@ -120,6 +147,7 @@
                         <option value="Gemini-3.1-Pro">Gemini-3.1-Pro</option>
                     </select>
                 </div>
+
                 <div class="button-group">
                     <button class="btn btn-outline" @click="openDictionaryModal">
                         新增詞庫
@@ -137,11 +165,12 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
-import {checkText} from '../services/api'
+import { ref } from 'vue'
+import { diffChars } from 'diff'
+import { checkText } from '../services/api'
 
 const originalText = ref('')
-const errorCollection = ref(null) // 添加校对结果状态
+const errorCollection = ref(null)
 const aiModel = ref('GPT-5.4')
 
 const isLoading = ref(false)
@@ -151,52 +180,52 @@ const toastMessage = ref('')
 // 词库相关状态
 const showDictionaryModal = ref(false)
 const defaultTerms = [
-    "身心障礙證明",
-    "身心障礙者生活補助",
-    "育兒津貼",
-    "托育補助",
-    "人籍合一",
-    "非自願離職",
-    "遺屬年金",
-    "家庭生活補助",
-    "兒童生活補助",
-    "就學生活補助",
-    "送托",
-    "主述問題",
-    "社會保險-勞保",
-    "社會保險-健保",
-    "社會保險-國保",
-    "社會保險-其他（農保、軍保、公保）",
-    "社會救助-急難紓困(原馬上關懷)",
-    "社會救助-一般急難救助",
-    "社會救助-一般經濟救助",
-    "社會救助-低收入戶",
-    "社會救助-中低收入戶",
-    "社會救助-災害補助(含防疫補償)",
-    "社會救助-遊民",
-    "社會救助-實（食）物",
-    "社會救助-兒童及少年未來教育與發展帳戶",
-    "通報-急難紓困(原馬上關懷)",
-    "通報-一般急難救助",
-    "通報-一般經濟救助",
-    "通報-低收入戶",
-    "通報-中低收入戶",
-    "通報-天然災害",
-    "通報-遊民",
-    "通報-實（食）物",
-    "通報-兒少福利",
-    "通報-家庭福利",
-    "通報-老人福利",
-    "通報-身心障礙福利",
-    "通報-社安網",
-    "保護性通報-身心障礙者保護",
-    "保護性通報-老人保護",
-    "保護性通報-家庭暴力",
-    "保護性通報-高風險家庭",
-    "保護性通報-兒童少年保護",
-    "保護性通報-自殺",
-    "保護性通報-性侵害"
-];
+    '身心障礙證明',
+    '身心障礙者生活補助',
+    '育兒津貼',
+    '托育補助',
+    '人籍合一',
+    '非自願離職',
+    '遺屬年金',
+    '家庭生活補助',
+    '兒童生活補助',
+    '就學生活補助',
+    '送托',
+    '主述問題',
+    '社會保險-勞保',
+    '社會保險-健保',
+    '社會保險-國保',
+    '社會保險-其他（農保、軍保、公保）',
+    '社會救助-急難紓困(原馬上關懷)',
+    '社會救助-一般急難救助',
+    '社會救助-一般經濟救助',
+    '社會救助-低收入戶',
+    '社會救助-中低收入戶',
+    '社會救助-災害補助(含防疫補償)',
+    '社會救助-遊民',
+    '社會救助-實（食）物',
+    '社會救助-兒童及少年未來教育與發展帳戶',
+    '通報-急難紓困(原馬上關懷)',
+    '通報-一般急難救助',
+    '通報-一般經濟救助',
+    '通報-低收入戶',
+    '通報-中低收入戶',
+    '通報-天然災害',
+    '通報-遊民',
+    '通報-實（食）物',
+    '通報-兒少福利',
+    '通報-家庭福利',
+    '通報-老人福利',
+    '通報-身心障礙福利',
+    '通報-社安網',
+    '保護性通報-身心障礙者保護',
+    '保護性通報-老人保護',
+    '保護性通報-家庭暴力',
+    '保護性通報-高風險家庭',
+    '保護性通報-兒童少年保護',
+    '保護性通報-自殺',
+    '保護性通報-性侵害'
+]
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
 
@@ -217,14 +246,14 @@ const saveDictionary = () => {
         .split('\n')
         .map(word => word.trim())
         .filter(word => word.length > 0)
-        .filter((word, index, self) => self.indexOf(word) === index); // 去重
+        .filter((word, index, self) => self.indexOf(word) === index)
 
     dictionary.value = words
     showToastMessage('詞庫已更新')
     closeDictionaryModal()
 }
 
-// 添加 Toast 控制函数
+// Toast
 const showToastMessage = (message, duration = 2000) => {
     toastMessage.value = message
     showToast.value = true
@@ -248,19 +277,15 @@ const handleCheck = async () => {
     try {
         const response = await checkText(
             originalText.value,
-            dictionary.value, // 使用动态词库
+            dictionary.value,
             aiModel.value
-        );
+        )
 
-        // 1. 根據 JSON 修改判斷條件
         if (response.code === '200') {
-            // 修改點：response.data 包含了 { corrected: "...", errors: [...] }
-            // 直接賦值給 errorCollection，這樣 template 就能通過 errorCollection.errors 訪問
-            errorCollection.value = response.data;
-
-            showToastMessage('校對完成');
+            errorCollection.value = response.data
+            showToastMessage('校對完成')
         } else {
-            showToastMessage(response.message || '校對發生錯誤');
+            showToastMessage(response.message || '校對發生錯誤')
         }
     } catch (error) {
         console.error('Check failed:', error)
@@ -270,49 +295,87 @@ const handleCheck = async () => {
     }
 }
 
-// 添加文本比较函数
-const compareText = (original, correction) => {
-    const result = [];
-    const maxLength = Math.max(original.length, correction.length);
+// 顯示字元：讓空白與換行可被看見
+const displayChar = (char) => {
+    if (char === ' ') return '␠'
+    if (char === '\n') return '↵\n'
+    return char
+}
 
-    for (let i = 0; i < maxLength; i++) {
-        const origChar = original[i] || '';
-        const corrChar = correction[i] || '';
+// 判斷差異字元類型
+const getCharTypeClass = (char) => {
+    if (char === '\n') return 'diff-newline'
+    if (char === ' ') return 'diff-space'
+    return 'diff-text'
+}
 
-        result.push({
-            char: origChar,
-            isDifferent: origChar !== corrChar
-        });
-    }
+/**
+ * mode = 'before'
+ * - 顯示 before 這一側
+ * - 保留 unchanged + removed
+ *
+ * mode = 'after'
+ * - 顯示 after 這一側
+ * - 保留 unchanged + added
+ */
+const compareText = (beforeText, afterText, mode = 'before') => {
+    const diffs = diffChars(beforeText || '', afterText || '')
+    const result = []
 
-    return result;
-};
-// end
+    diffs.forEach(part => {
+        let shouldRender = false
+        let isDifferent = false
+
+        if (mode === 'before') {
+            if (!part.added) {
+                shouldRender = true
+                isDifferent = !!part.removed
+            }
+        } else {
+            if (!part.removed) {
+                shouldRender = true
+                isDifferent = !!part.added
+            }
+        }
+
+        if (!shouldRender) return
+
+        for (const char of part.value) {
+            result.push({
+                char,
+                isDifferent,
+                diffType: isDifferent ? getCharTypeClass(char) : ''
+            })
+        }
+    })
+
+    return result
+}
 
 const clearAll = () => {
     originalText.value = ''
-    errorCollection.value = null // 清除校对结果
+    errorCollection.value = null
     showToastMessage('已清除全部內容')
 }
 
 // 添加字体大小控制
 const fontSizes = [
-    {label: '小', value: '1.25rem'},
-    {label: '中', value: '1.5rem'},
-    {label: '大', value: '2rem'},
-    {label: '特大', value: '3rem'}
-];
+    { label: '小', value: '1.25rem' },
+    { label: '中', value: '1.5rem' },
+    { label: '大', value: '2rem' },
+    { label: '特大', value: '3rem' }
+]
 
-const currentFontSize = ref('1.5rem'); // 默认中字体
+const currentFontSize = ref('1.5rem')
 
 const setFontSize = (size) => {
-    currentFontSize.value = size;
-};
+    currentFontSize.value = size
+}
 </script>
 
 <style scoped>
 .app-wrapper {
-    position: fixed; /* 修复偏移 */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
@@ -322,7 +385,7 @@ const setFontSize = (size) => {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    overflow: hidden; /* 防止出现滚动条 */
+    overflow: hidden;
 }
 
 .glass-container {
@@ -461,7 +524,6 @@ textarea.panel-content {
 }
 
 /* 是否使用AI */
-
 .select-container {
     display: flex;
     align-items: center;
@@ -502,7 +564,6 @@ textarea.panel-content {
 }
 
 /* btn */
-
 .btn {
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
@@ -549,29 +610,43 @@ textarea.panel-content {
 }
 
 :deep(.wrong) {
-    background: rgba(248, 113, 113, 0.4); /* 加深红色背景 */
-    padding: 0.2rem 0.5rem; /* 增加内边距 */
+    background: rgba(248, 113, 113, 0.4);
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
     transition: all 0.2s ease;
-    border: 1px solid rgba(248, 113, 113, 0.6); /* 添加边框 */
-    color: #dc2626; /* 文字改为红色 */
-    font-weight: 500; /* 加粗文字 */
+    border: 1px solid rgba(248, 113, 113, 0.6);
+    color: #dc2626;
+    font-weight: 500;
 }
 
 :deep(.correct) {
-    background: rgba(74, 222, 128, 0.4); /* 加深绿色背景 */
-    padding: 0.2rem 0.5rem; /* 增加内边距 */
+    background: rgba(74, 222, 128, 0.4);
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid rgba(74, 222, 128, 0.6); /* 添加边框 */
-    color: #15803d; /* 文字改为绿色 */
-    font-weight: 500; /* 加粗文字 */
+    border: 1px solid rgba(74, 222, 128, 0.6);
+    color: #15803d;
+    font-weight: 500;
 }
 
 :deep(.correct:hover) {
-    background: rgba(74, 222, 128, 0.5); /* 加深悬停效果 */
-    transform: scale(1.05); /* 悬停时略微放大 */
+    background: rgba(74, 222, 128, 0.5);
+    transform: scale(1.05);
+}
+
+/* 空白：藍色 */
+:deep(.diff-space) {
+    background: rgba(59, 130, 246, 0.18) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #2563eb !important;
+}
+
+/* 換行：橘色 */
+:deep(.diff-newline) {
+    background: rgba(249, 115, 22, 0.18) !important;
+    border-color: rgba(249, 115, 22, 0.5) !important;
+    color: #ea580c !important;
 }
 
 /* Loading 样式 */
@@ -721,7 +796,7 @@ textarea.panel-content {
 
 .correction-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 1rem;
     padding: 0.75rem;
     background: rgba(255, 255, 255, 0.7);
@@ -731,16 +806,21 @@ textarea.panel-content {
 
 .correction-original {
     flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .correction-arrow {
     margin: 0 1rem;
     color: #666;
     font-weight: bold;
+    align-self: center;
 }
 
 .correction-corrected {
     flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .corrections-list h3 {
