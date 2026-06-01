@@ -1,9 +1,11 @@
 <template>
     <div class="app-wrapper">
+        <!-- 添加 Loading 遮罩 -->
         <div v-if="isLoading" class="loading-overlay">
             <div class="loading-spinner"></div>
         </div>
 
+        <!-- 添加 Toast 组件 -->
         <div
             v-if="showToast"
             class="toast-container"
@@ -14,11 +16,11 @@
             </div>
         </div>
 
+
         <div class="glass-container">
             <header>
                 <h1>文本校對工具</h1>
-            </header>
-
+            </header><!-- 添加词库模态窗口 -->
             <div v-if="showDictionaryModal" class="modal-overlay">
                 <div class="modal-container">
                     <div class="modal-header">
@@ -61,47 +63,35 @@
                     <div class="panel-header">
                         <span class="panel-title">校對结果</span>
                     </div>
-                    <div class="panel-content result-panel">
+                    <div class="panel-content">
+                        <!-- 添加校对结果列表 -->
+                        <!-- 添加校对结果列表 -->
                         <div v-if="errorCollection">
-                            <div v-if="diffRows.length > 0" class="corrections-list">
-                                <div
-                                    v-for="(row, index) in diffRows"
-                                    :key="index"
-                                    class="correction-item"
-                                >
+                            <!-- 這裡使用了 JSON 中的 errors 陣列 -->
+                            <div v-if="errorCollection.errors && errorCollection.errors.length > 0" class="corrections-list">
+                                <div v-for="(error, index) in errorCollection.errors" :key="index" class="correction-item">
                                     <div class="correction-original">
-                                        <template
-                                            v-for="(char, charIndex) in row.originalChars"
-                                            :key="`o-${index}-${charIndex}`"
-                                        >
-                                            <span :class="{ wrong: char.isDifferent }">
-                                                {{ displayChar(char.char) }}
-                                            </span>
+                                        <!-- 修改點：將 error.original 改為 error.before -->
+                                        <!-- 修改點：將 error.correction 改為 error.after -->
+                                        <template v-for="(char, charIndex) in compareText(error.before, error.after)">
+                                            <span :class="{ 'wrong': char.isDifferent }">{{ char.char }}</span>
                                         </template>
                                     </div>
-
                                     <div class="correction-arrow">→</div>
-
                                     <div class="correction-corrected">
-                                        <template
-                                            v-for="(char, charIndex) in row.checkedChars"
-                                            :key="`c-${index}-${charIndex}`"
-                                        >
-                                            <span :class="{ correct: char.isDifferent }">
-                                                {{ displayChar(char.char) }}
-                                            </span>
+                                        <!-- 修改點：將 error.correction 改為 error.after -->
+                                        <!-- 修改點：將 error.original 改為 error.before -->
+                                        <template v-for="(char, charIndex) in compareText(error.after, error.before)">
+                                            <span :class="{ 'correct': char.isDifferent }">{{ char.char }}</span>
                                         </template>
                                     </div>
                                 </div>
                             </div>
-
                             <div v-else class="no-errors">
                                 <p>未發現需要校正的內容</p>
+                                <!-- 如果沒有錯誤，也可以顯示完整的修正後文本 -->
+                                <!-- <p style="margin-top: 1rem; color: #333;">{{ errorCollection.corrected }}</p> -->
                             </div>
-                        </div>
-
-                        <div v-else class="no-errors">
-                            <p>尚未進行校對</p>
                         </div>
                     </div>
                 </section>
@@ -118,17 +108,18 @@
                         {{ size.label }}
                     </button>
                 </div>
-
                 <div class="select-container">
                     <label class="select-label">選擇AI模型</label>
-                    <select v-model="aiModel" class="select-input">
-                        <option value="GPT-5.4">GPT-5.4</option>
+                    <select
+                        v-model="aiModel"
+                        class="select-input"
+                    >
+                        <option value="GPT-5.4">GPT-5.4"</option>
                         <option value="DeepSeek-R1">DeepSeek-R1</option>
                         <option value="DeepSeek-V3.2">DeepSeek-V3.2</option>
                         <option value="Gemini-3.1-Pro">Gemini-3.1-Pro</option>
                     </select>
                 </div>
-
                 <div class="button-group">
                     <button class="btn btn-outline" @click="openDictionaryModal">
                         新增詞庫
@@ -146,17 +137,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { checkText } from '../services/api'
+import {ref} from 'vue'
+import {checkText} from '../services/api'
 
 const originalText = ref('')
-const errorCollection = ref(null)
+const errorCollection = ref(null) // 添加校对结果状态
 const aiModel = ref('GPT-5.4')
 
 const isLoading = ref(false)
 const showToast = ref(false)
 const toastMessage = ref('')
 
+// 词库相关状态
 const showDictionaryModal = ref(false)
 const defaultTerms = [
     "身心障礙證明",
@@ -204,31 +196,35 @@ const defaultTerms = [
     "保護性通報-兒童少年保護",
     "保護性通報-自殺",
     "保護性通報-性侵害"
-]
+];
 const dictionaryInput = ref('')
 const dictionary = ref(defaultTerms)
 
+// 打开词库模态窗口
 const openDictionaryModal = () => {
     dictionaryInput.value = dictionary.value.join('\n')
     showDictionaryModal.value = true
 }
 
+// 关闭词库模态窗口
 const closeDictionaryModal = () => {
     showDictionaryModal.value = false
 }
 
+// 保存词库
 const saveDictionary = () => {
     const words = dictionaryInput.value
         .split('\n')
         .map(word => word.trim())
         .filter(word => word.length > 0)
-        .filter((word, index, self) => self.indexOf(word) === index)
+        .filter((word, index, self) => self.indexOf(word) === index); // 去重
 
     dictionary.value = words
     showToastMessage('詞庫已更新')
     closeDictionaryModal()
 }
 
+// 添加 Toast 控制函数
 const showToastMessage = (message, duration = 2000) => {
     toastMessage.value = message
     showToast.value = true
@@ -252,15 +248,19 @@ const handleCheck = async () => {
     try {
         const response = await checkText(
             originalText.value,
-            dictionary.value,
+            dictionary.value, // 使用动态词库
             aiModel.value
-        )
+        );
 
+        // 1. 根據 JSON 修改判斷條件
         if (response.code === '200') {
-            errorCollection.value = response.data
-            showToastMessage('校對完成')
+            // 修改點：response.data 包含了 { corrected: "...", errors: [...] }
+            // 直接賦值給 errorCollection，這樣 template 就能通過 errorCollection.errors 訪問
+            errorCollection.value = response.data;
+
+            showToastMessage('校對完成');
         } else {
-            showToastMessage(response.message || '校對發生錯誤')
+            showToastMessage(response.message || '校對發生錯誤');
         }
     } catch (error) {
         console.error('Check failed:', error)
@@ -270,297 +270,49 @@ const handleCheck = async () => {
     }
 }
 
-/* =========================
-   文本處理
-========================= */
+// 添加文本比较函数
+const compareText = (original, correction) => {
+    const result = [];
+    const maxLength = Math.max(original.length, correction.length);
 
-const normalizeText = (text = '') => {
-    return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-}
+    for (let i = 0; i < maxLength; i++) {
+        const origChar = original[i] || '';
+        const corrChar = correction[i] || '';
 
-const punctuationRegex = /[，。！？；：,.!?;:]/
-
-// 切成「句子 / 標題 / 空行段」單位
-const splitTextUnits = (text = '') => {
-    const source = normalizeText(text)
-    const lines = source.split('\n')
-    const units = []
-
-    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-        const line = lines[lineIndex]
-
-        // 保留空行，讓多空行可被比對出來
-        if (line === '') {
-            units.push('\n')
-            continue
-        }
-
-        // 大標題如：一、 二、 三、
-        if (/^[一二三四五六七八九十百千]+、/.test(line.trim())) {
-            units.push(line)
-            continue
-        }
-
-        // 小標題如：(一)xxx
-        if (/^\([一二三四五六七八九十]+\)/.test(line.trim())) {
-            units.push(line)
-            continue
-        }
-
-        // 條列如：1.xxx
-        if (/^\d+\./.test(line.trim())) {
-            units.push(line)
-            continue
-        }
-
-        // 一般行：再切句
-        let buffer = ''
-        for (let i = 0; i < line.length; i++) {
-            const ch = line[i]
-            buffer += ch
-
-            if (punctuationRegex.test(ch)) {
-                // 吃掉後面連續標點，視為同一句尾
-                while (i + 1 < line.length && punctuationRegex.test(line[i + 1])) {
-                    i++
-                    buffer += line[i]
-                }
-                units.push(buffer)
-                buffer = ''
-            }
-        }
-
-        if (buffer) {
-            units.push(buffer)
-        }
+        result.push({
+            char: origChar,
+            isDifferent: origChar !== corrChar
+        });
     }
 
-    return units
-}
-
-/* =========================
-   陣列級比對：把 original units 對到 checked units
-   目標：輸出一筆一筆 before → after
-========================= */
-
-const calcSimilarity = (a = '', b = '') => {
-    if (!a && !b) return 1
-    if (!a || !b) return 0
-
-    const setA = new Set([...a])
-    const setB = new Set([...b])
-
-    let common = 0
-    for (const ch of setA) {
-        if (setB.has(ch)) common++
-    }
-
-    return common / Math.max(setA.size, setB.size, 1)
-}
-
-const pairTextUnits = (originalUnits, checkedUnits) => {
-    const result = []
-    const usedChecked = new Set()
-
-    for (let i = 0; i < originalUnits.length; i++) {
-        const before = originalUnits[i]
-
-        let bestIndex = -1
-        let bestScore = -1
-
-        for (let j = 0; j < checkedUnits.length; j++) {
-            if (usedChecked.has(j)) continue
-
-            const after = checkedUnits[j]
-
-            // 完全相同優先
-            if (before === after) {
-                bestIndex = j
-                bestScore = 999
-                break
-            }
-
-            const score = calcSimilarity(before, after)
-            if (score > bestScore) {
-                bestScore = score
-                bestIndex = j
-            }
-        }
-
-        // 相似度太低，就視為無法配對
-        if (bestIndex !== -1 && bestScore >= 0.35) {
-            usedChecked.add(bestIndex)
-            result.push({
-                before,
-                after: checkedUnits[bestIndex]
-            })
-        } else {
-            result.push({
-                before,
-                after: ''
-            })
-        }
-    }
-
-    // 補上 original 中沒有對到的 checked
-    for (let j = 0; j < checkedUnits.length; j++) {
-        if (!usedChecked.has(j)) {
-            result.push({
-                before: '',
-                after: checkedUnits[j]
-            })
-        }
-    }
-
-    return result
-}
-
-/* =========================
-   字元級 diff
-========================= */
-
-const diffChars = (original = '', checked = '') => {
-    const a = [...original]
-    const b = [...checked]
-    const m = a.length
-    const n = b.length
-
-    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0))
-
-    for (let i = m - 1; i >= 0; i--) {
-        for (let j = n - 1; j >= 0; j--) {
-            if (a[i] === b[j]) {
-                dp[i][j] = dp[i + 1][j + 1] + 1
-            } else {
-                dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1])
-            }
-        }
-    }
-
-    const originalChars = []
-    const checkedChars = []
-
-    let i = 0
-    let j = 0
-
-    while (i < m && j < n) {
-        if (a[i] === b[j]) {
-            originalChars.push({
-                char: a[i],
-                isDifferent: false
-            })
-            checkedChars.push({
-                char: b[j],
-                isDifferent: false
-            })
-            i++
-            j++
-        } else if (dp[i + 1][j] >= dp[i][j + 1]) {
-            originalChars.push({
-                char: a[i],
-                isDifferent: true
-            })
-            checkedChars.push({
-                char: '',
-                isDifferent: false
-            })
-            i++
-        } else {
-            originalChars.push({
-                char: '',
-                isDifferent: false
-            })
-            checkedChars.push({
-                char: b[j],
-                isDifferent: true
-            })
-            j++
-        }
-    }
-
-    while (i < m) {
-        originalChars.push({
-            char: a[i],
-            isDifferent: true
-        })
-        checkedChars.push({
-            char: '',
-            isDifferent: false
-        })
-        i++
-    }
-
-    while (j < n) {
-        originalChars.push({
-            char: '',
-            isDifferent: false
-        })
-        checkedChars.push({
-            char: b[j],
-            isDifferent: true
-        })
-        j++
-    }
-
-    return { originalChars, checkedChars }
-}
-
-const hasRealDiff = (before, after) => before !== after
-
-const diffRows = computed(() => {
-    if (!errorCollection.value) return []
-
-    const original = normalizeText(errorCollection.value.original || '')
-    const checked = normalizeText(errorCollection.value.checked || '')
-
-    const originalUnits = splitTextUnits(original)
-    const checkedUnits = splitTextUnits(checked)
-
-    const paired = pairTextUnits(originalUnits, checkedUnits)
-
-    return paired
-        .filter(row => hasRealDiff(row.before, row.after))
-        .map(row => {
-            const { originalChars, checkedChars } = diffChars(row.before, row.after)
-            return {
-                before: row.before,
-                after: row.after,
-                originalChars,
-                checkedChars
-            }
-        })
-})
-
-const displayChar = (char) => {
-    if (char === '') return ''
-    if (char === ' ') return ' '
-    if (char === '\n') return '\n'
-    return char
-}
+    return result;
+};
+// end
 
 const clearAll = () => {
     originalText.value = ''
-    errorCollection.value = null
+    errorCollection.value = null // 清除校对结果
     showToastMessage('已清除全部內容')
 }
 
+// 添加字体大小控制
 const fontSizes = [
-    { label: '小', value: '1.25rem' },
-    { label: '中', value: '1.5rem' },
-    { label: '大', value: '2rem' },
-    { label: '特大', value: '3rem' }
-]
+    {label: '小', value: '1.25rem'},
+    {label: '中', value: '1.5rem'},
+    {label: '大', value: '2rem'},
+    {label: '特大', value: '3rem'}
+];
 
-const currentFontSize = ref('1.5rem')
+const currentFontSize = ref('1.5rem'); // 默认中字体
 
 const setFontSize = (size) => {
-    currentFontSize.value = size
-}
+    currentFontSize.value = size;
+};
 </script>
 
 <style scoped>
 .app-wrapper {
-    position: fixed;
+    position: fixed; /* 修复偏移 */
     top: 0;
     left: 0;
     width: 100vw;
@@ -570,7 +322,7 @@ const setFontSize = (size) => {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    overflow: hidden;
+    overflow: hidden; /* 防止出现滚动条 */
 }
 
 .glass-container {
@@ -671,11 +423,6 @@ textarea.panel-content {
     background: rgba(255, 255, 255, 0.8);
 }
 
-.result-panel {
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
 .panel-content::-webkit-scrollbar {
     width: 6px;
 }
@@ -712,6 +459,8 @@ textarea.panel-content {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     background: rgba(255, 255, 255, 0.9);
 }
+
+/* 是否使用AI */
 
 .select-container {
     display: flex;
@@ -751,6 +500,8 @@ textarea.panel-content {
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
+
+/* btn */
 
 .btn {
     padding: 0.6rem 1.2rem;
@@ -798,25 +549,32 @@ textarea.panel-content {
 }
 
 :deep(.wrong) {
-    background: rgba(248, 113, 113, 0.28);
-    padding: 0.15rem 0.35rem;
+    background: rgba(248, 113, 113, 0.4); /* 加深红色背景 */
+    padding: 0.2rem 0.5rem; /* 增加内边距 */
     border-radius: 4px;
     transition: all 0.2s ease;
-    border: 1px solid rgba(248, 113, 113, 0.45);
-    color: #dc2626;
-    font-weight: 500;
+    border: 1px solid rgba(248, 113, 113, 0.6); /* 添加边框 */
+    color: #dc2626; /* 文字改为红色 */
+    font-weight: 500; /* 加粗文字 */
 }
 
 :deep(.correct) {
-    background: rgba(74, 222, 128, 0.28);
-    padding: 0.15rem 0.35rem;
+    background: rgba(74, 222, 128, 0.4); /* 加深绿色背景 */
+    padding: 0.2rem 0.5rem; /* 增加内边距 */
     border-radius: 4px;
+    cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid rgba(74, 222, 128, 0.45);
-    color: #15803d;
-    font-weight: 500;
+    border: 1px solid rgba(74, 222, 128, 0.6); /* 添加边框 */
+    color: #15803d; /* 文字改为绿色 */
+    font-weight: 500; /* 加粗文字 */
 }
 
+:deep(.correct:hover) {
+    background: rgba(74, 222, 128, 0.5); /* 加深悬停效果 */
+    transform: scale(1.05); /* 悬停时略微放大 */
+}
+
+/* Loading 样式 */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -849,6 +607,7 @@ textarea.panel-content {
     }
 }
 
+/* Toast 样式 */
 .toast-container {
     position: fixed;
     top: 50%;
@@ -876,6 +635,7 @@ textarea.panel-content {
     backdrop-filter: blur(8px);
 }
 
+/* 模态窗口样式 */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -954,6 +714,7 @@ textarea.panel-content {
     gap: 1rem;
 }
 
+/* 校对列表 */
 .corrections-list {
     margin-top: 1.5rem;
 }
@@ -966,23 +727,28 @@ textarea.panel-content {
     background: rgba(255, 255, 255, 0.7);
     border-radius: 8px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    gap: 1rem;
 }
 
-.correction-original,
-.correction-corrected {
+.correction-original {
     flex: 1;
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: #334155;
 }
 
 .correction-arrow {
-    margin: 0 0.5rem;
+    margin: 0 1rem;
     color: #666;
     font-weight: bold;
-    font-size: 1.4rem;
-    flex-shrink: 0;
+}
+
+.correction-corrected {
+    flex: 1;
+}
+
+.corrections-list h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
 }
 
 .no-errors {
