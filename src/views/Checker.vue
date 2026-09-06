@@ -141,9 +141,9 @@
                         v-model="aiModel"
                         class="select-input"
                     >
+                        <option value="google/gemini-3.6-flash">Gemini 3.6 Flash</option>
                         <option value="deepseek/deepseek-v4-flash-0731">DeepSeek V4 Flash 0731</option>
                         <option value="deepseek/deepseek-v4-pro-0813">DeepSeek V4 Pro 0813</option>
-                        <option value="google/gemini-3.6-flash">Gemini 3.6 Flash</option>
                     </select>
                 </div>
 
@@ -170,7 +170,7 @@ import { checkText } from '../services/api'
 
 const originalText = ref('')
 const errorCollection = ref(null)
-const aiModel = ref('deepseek/deepseek-v4-flash-0731')
+const aiModel = ref('google/gemini-3.6-flash')
 
 const isLoading = ref(false)
 const showToast = ref(false)
