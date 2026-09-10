@@ -57,12 +57,24 @@ jobs:
           port: 22
           script: |
             cd /opt/xiaobaobei-server
-            # 使用 sed 替換 VUE_CHECKER_VERSION 的值；如果不存在則新增
-            if grep -q "^VUE_CHECKER_VERSION=" .env; then
-              sed -i "s/^VUE_CHECKER_VERSION=.*/VUE_CHECKER_VERSION=${{ needs.build-and-push-docker.outputs.tag }}/" .env
-            else
-              echo "VUE_CHECKER_VERSION=${{ needs.build-and-push-docker.outputs.tag }}" >> .env
-            fi
+
+            upsert_env_var() {
+              key="$1"
+              value="$2"
+
+              touch .env
+              if [ -s .env ] && [ -n "$(tail -c 1 .env)" ]; then
+                printf "\n" >> .env
+              fi
+
+              if grep -q "^${key}=" .env; then
+                sed -i "s|^${key}=.*|${key}=${value}|" .env
+              else
+                printf "%s=%s\n" "$key" "$value" >> .env
+              fi
+            }
+
+            upsert_env_var "VUE_CHECKER_VERSION" "${{ needs.build-and-push-docker.outputs.tag }}"
             
             # 檢查修改結果 (選用)
             grep "VUE_CHECKER_VERSION" .env
