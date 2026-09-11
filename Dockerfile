@@ -1,13 +1,25 @@
-FROM node:20.18.1-alpine
+FROM node:20.18.1-alpine AS build
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
-EXPOSE 5173
+RUN npm run build
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+FROM node:20.18.1-alpine AS runtime
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV STATIC_PORT=8080
+
+COPY --from=build /app/dist ./dist
+COPY server.mjs ./server.mjs
+
+EXPOSE 8080
+
+CMD ["node", "server.mjs"]
